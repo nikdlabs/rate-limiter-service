@@ -1,0 +1,38 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  rate-limiter:
+    build:
+      context: ./rate-limiter-service/rate-limiter-service
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATA_REDIS_HOST=redis
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  demo-otp:
+    build:
+      context: ./demo-otp-service
+    ports:
+      - "8081:8081"
+    environment:
+      - RATELIMITER_BASE_URL=http://rate-limiter:8080
+    depends_on:
+      rate-limiter:
+        condition: service_healthy
