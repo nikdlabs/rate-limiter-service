@@ -17,5 +17,13 @@ public class CorsConfig implements WebMvcConfigurer {
                 )
                 .allowedMethods("GET", "POST", "DELETE")
                 .allowedHeaders("*");
+
+        registry.addMapping("/actuator/health")
+                .allowedOrigins(
+                        "https://nikdlabs.github.io",
+                        "http://localhost:5500",
+                        "http://127.0.0.1:5500"
+                )
+                .allowedMethods("GET");
     }
 }
